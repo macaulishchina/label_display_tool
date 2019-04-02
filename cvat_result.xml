@@ -1,0 +1,200 @@
+<annotations>
+  <version>1.1</version>
+  <meta>
+    <task>
+      <id>24</id>
+      <name>demo</name>
+      <size>2619</size>
+      <mode>annotation</mode>
+      <overlap>0</overlap>
+      <bugtracker/>
+      <flipped>False</flipped>
+      <created>2019-03-29 15:04:31.444238+03:00</created>
+      <updated>2019-03-29 15:04:31.444252+03:00</updated>
+      <source>2619 images: test/28-5-cut/00-28-5.jpg, test/28-5-cut/01-28-5.jpg, ...</source>
+      <labels>
+        <label>
+          <name>person</name>
+          <attributes>
+            <attribute>@select=direction:unknown,front,back,left,right</attribute>
+            <attribute>@select=coat:red,blue,green,white,yellow,black,brown,unknown</attribute>
+            <attribute>@select=hat:true,false</attribute>
+            <attribute>@select=sex:man,woman</attribute>
+            <attribute>@select=bag:true,false</attribute>
+            <attribute>@select=pants:red,blue,green,white,yellow,black,brown,unknown</attribute>
+            <attribute>@select=action:run,jump,static</attribute>
+          </attributes>
+        </label>
+        <label>
+          <name>tricycle</name>
+          <attributes>
+            <attribute>@select=color:red,blue,green,white,yellow,black,brown,unknown</attribute>
+          </attributes>
+        </label>
+        <label>
+          <name>engineeringvan</name>
+          <attributes>
+            <attribute>@select=color:red,blue,green,white,yellow,black,brown,unknown</attribute>
+          </attributes>
+        </label>
+        <label>
+          <name>tractor</name>
+          <attributes>
+            <attribute>@select=color:red,blue,green,white,yellow,black,brown,unknown</attribute>
+          </attributes>
+        </label>
+        <label>
+          <name>tanker</name>
+          <attributes>
+            <attribute>@select=color:red,blue,green,white,yellow,black,brown,unknown</attribute>
+          </attributes>
+        </label>
+        <label>
+          <name>truck</name>
+          <attributes>
+            <attribute>@select=color:red,blue,green,white,yellow,black,brown,unknown</attribute>
+          </attributes>
+        </label>
+        <label>
+          <name>pickup</name>
+          <attributes>
+            <attribute>@select=color:red,blue,green,white,yellow,black,brown,unknown</attribute>
+          </attributes>
+        </label>
+        <label>
+          <name>microbus</name>
+          <attributes>
+            <attribute>@select=color:red,blue,green,white,yellow,black,brown,unknown</attribute>
+          </attributes>
+        </label>
+        <label>
+          <name>bus</name>
+          <attributes>
+            <attribute>@select=color:red,blue,green,white,yellow,black,brown,unknown</attribute>
+          </attributes>
+        </label>
+        <label>
+          <name>SUV</name>
+          <attributes>
+            <attribute>@select=color:red,blue,green,white,yellow,black,brown,unknown</attribute>
+          </attributes>
+        </label>
+        <label>
+          <name>car</name>
+          <attributes>
+            <attribute>@select=color:red,blue,green,white,yellow,black,brown,unknown</attribute>
+          </attributes>
+        </label>
+        <label>
+          <name>motorbike</name>
+          <attributes>
+            <attribute>@select=color:red,blue,green,white,yellow,black,brown,unknown</attribute>
+          </attributes>
+        </label>
+      </labels>
+      <segments>
+        <segment>
+          <id>24</id>
+          <start>0</start>
+          <stop>2618</stop>
+          <url>http://192.168.9.13:18080/?id=24</url>
+        </segment>
+      </segments>
+      <owner>
+        <username>admin</username>
+        <email>571811428@qq.com</email>
+      </owner>
+    </task>
+    <dumped>2019-03-29 15:04:54.064645+03:00</dumped>
+  </meta>
+  <image id="1">
+    <box label="person" xbr="1" xtl="0" ybr="1" ytl="0">
+      <attribute name="coat">black</attribute>
+      <attribute name="action">jump</attribute>
+      <attribute name="pants">black</attribute>
+      <attribute name="sex">man</attribute>
+      <attribute name="hat">false</attribute>
+      <attribute name="bag">false</attribute>
+    </box>
+  </image>
+  <image id="2">
+    <box label="person" xbr="1" xtl="0" ybr="1" ytl="0">
+      <attribute name="coat">black</attribute>
+      <attribute name="action">jump</attribute>
+      <attribute name="pants">black</attribute>
+      <attribute name="sex">man</attribute>
+      <attribute name="hat">false</attribute>
+      <attribute name="bag">false</attribute>
+    </box>
+  </image>
+  <image id="3">
+    <box label="person" xbr="1" xtl="0" ybr="1" ytl="0">
+      <attribute name="coat">black</attribute>
+      <attribute name="action">jump</attribute>
+      <attribute name="pants">black</attribute>
+      <attribute name="sex">man</attribute>
+      <attribute name="hat">false</attribute>
+      <attribute name="bag">false</attribute>
+    </box>
+  </image>
+  <image id="4">
+    <box label="person" xbr="1" xtl="0" ybr="1" ytl="0">
+      <attribute name="coat">black</attribute>
+      <attribute name="action">jump</attribute>
+      <attribute name="pants">black</attribute>
+      <attribute name="sex">man</attribute>
+      <attribute name="hat">false</attribute>
+      <attribute name="bag">false</attribute>
+    </box>
+  </image>
+  <image id="5">
+    <box label="person" xbr="1" xtl="0" ybr="1" ytl="0">
+      <attribute name="coat">black</attribute>
+      <attribute name="action">jump</attribute>
+      <attribute name="pants">black</attribute>
+      <attribute name="sex">man</attribute>
+      <attribute name="hat">false</attribute>
+      <attribute name="bag">false</attribute>
+    </box>
+  </image>
+  <image id="6">
+    <box label="person" xbr="1" xtl="0" ybr="1" ytl="0">
+      <attribute name="coat">black</attribute>
+      <attribute name="action">jump</attribute>
+      <attribute name="pants">black</attribute>
+      <attribute name="sex">man</attribute>
+      <attribute name="hat">false</attribute>
+      <attribute name="bag">false</attribute>
+    </box>
+  </image>
+  <image id="7">
+    <box label="person" xbr="1" xtl="0" ybr="1" ytl="0">
+      <attribute name="coat">black</attribute>
+      <attribute name="action">jump</attribute>
+      <attribute name="pants">black</attribute>
+      <attribute name="sex">man</attribute>
+      <attribute name="hat">false</attribute>
+      <attribute name="bag">false</attribute>
+    </box>
+  </image>
+  <image id="8">
+    <box label="person" xbr="1" xtl="0" ybr="1" ytl="0">
+      <attribute name="coat">black</attribute>
+      <attribute name="action">jump</attribute>
+      <attribute name="pants">black</attribute>
+      <attribute name="sex">man</attribute>
+      <attribute name="hat">false</attribute>
+      <attribute name="bag">false</attribute>
+    </box>
+  </image>
+  <image id="9">
+    <box label="person" xbr="1" xtl="0" ybr="1" ytl="0">
+      <attribute name="coat">black</attribute>
+      <attribute name="action">jump</attribute>
+      <attribute name="pants">black</attribute>
+      <attribute name="sex">man</attribute>
+      <attribute name="hat">false</attribute>
+      <attribute name="bag">false</attribute>
+    </box>
+  </image>
+</annotations>
