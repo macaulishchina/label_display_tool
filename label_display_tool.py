@@ -9,12 +9,13 @@ import math
 
 class Painter:
 
-    def __init__(self):
+    def __init__(self, track=False):
         self.draw_data = DrawData()
+        self.line_width = args.attr_length
         self.img = None
         self.img_width = None
         self.img_height = None
-        self.line_width = None
+        self.track = track
         self.global_color_map = {
             "orange": (0, 140, 255),
             "red": (0, 0, 255),
@@ -24,6 +25,7 @@ class Painter:
             "black": (0, 0, 0),
             "white": (255, 255, 255)
         }
+        self.temp_color_map = {}
 
     def clean(self):
         self.global_color_map = {
@@ -38,9 +40,10 @@ class Painter:
 
     def forget(self):
         self.draw_data.clear()
+        self.temp_color_map = {}
 
     def add_box(self, label_name, box_data, id=-1):
-        return self.draw_data.add_box(label_name, box_data, id)
+        return self.draw_data.add_box(label_name, box_data, id, self.track)
 
     def add_polygon(self, label_name, polygon_data, id=-1):
         return self.draw_data.add_polygon(label_name, polygon_data, id)
@@ -63,6 +66,16 @@ class Painter:
             r, g, b = colors[i]
             self.global_color_map[names[i]] = (b, g, r)
 
+    def specify_color(self, id, color):
+        """指定具体框的颜色
+
+        Args:
+            id: 框的id
+            color: 颜色参数，rgb格式
+        """
+        b, g, r = color
+        self.temp_color_map[id] = (r, g, b)
+
     def draw(self, img):
         """绘制[draw_data]中的数据到的图片[img]上
 
@@ -72,11 +85,10 @@ class Painter:
         """
         self.img = img
         self.img_height, self.img_width = self.img.shape[0:2]
-        self.line_width = int(0.1 * self.img_width * args.name_font_size / 25)
 
         for view in self.draw_data.data_pack:
             if 'box' in view.keys():
-                self._draw_box(view['name'], view['box'])
+                self._draw_box(view['id'], view['name'], view['box'])
             if 'polygon' in view.keys():
                 self._draw_polygon(view['polygon'])
             if 'keypoints' in view.keys():
@@ -84,9 +96,13 @@ class Painter:
             if 'attributes' in view.keys() and 'box' in view.keys():
                 self._draw_attributes(view['attributes'], view['box'])
 
+        if self.track:
+            self._draw_tracks(self.draw_data.tracks)
+            self.draw_data.update_tracks()
+
         return self.img
 
-    def _draw_box(self, name, box_data):
+    def _draw_box(self, id, name, box_data):
         """绘制单个矩形框到图形上
 
         Args:
@@ -116,7 +132,9 @@ class Painter:
                          -1)
             self.img = cv.addWeighted(layer, args.alpha_name, self.img, 1 - args.alpha_name, 0, self.img)
             # 矩形边框
-            if name in self.global_color_map.keys():
+            if id in self.temp_color_map.keys():
+                color = self.temp_color_map[id]
+            elif name in self.global_color_map.keys():
                 color = self.global_color_map[name]
             else:
                 color = self.global_color_map[args.box_color]
@@ -212,7 +230,7 @@ class Painter:
                          -1)
             self.img = cv.addWeighted(layer, args.alpha_attr, self.img, 1 - args.alpha_attr, 0, self.img)
 
-            self._draw_text(' %s:%s' % (a_k, a_v),
+            self._draw_text(' %s' % (a_v),
                             (attr_x1, attr_y1),
                             args.attr_font_size,
                             self.global_color_map[args.attr_font_color])
@@ -226,6 +244,14 @@ class Painter:
         draw.text(pt1, text, font=font, fill=(r, g, b))
         self.img = cv.cvtColor(np.asarray(img_PIL), cv.COLOR_RGB2BGR)
 
+    def _draw_tracks(self, tracks):
+        for idx, track in enumerate(tracks):
+            alpha = 1 - idx / args.track_length
+            for x, y in track:
+                layer = self.img.copy()
+                cv.circle(layer, (int(x), int(y)), args.track_size, self.global_color_map[args.track_color], -1)
+                self.img = cv.addWeighted(layer, alpha, self.img, 1 - alpha, 0, self.img)
+
 
 class DrawData:
     """标注工具内部使用的数据结构
@@ -234,6 +260,7 @@ class DrawData:
 
     def __init__(self):
         self.data_pack = []
+        self.tracks = [[]]
         self.global_id = 0
 
     def clear(self):
@@ -242,7 +269,7 @@ class DrawData:
         self.data_pack = []
         self.global_id = 0
 
-    def add_box(self, label_name, box_data, id=-1):
+    def add_box(self, label_name, box_data, id=-1, track=False):
         """添加矩形框到[data_pack]
 
         Args:
@@ -267,6 +294,10 @@ class DrawData:
                     self.data_pack[i]['box'] = list(box_data)
             if i == len(self.data_pack):  # id不存在，则新建
                 self.add_box(label_name, box_data, -1)
+
+        if track:
+            self.tracks[0].append(((box_data[0] + box_data[2]) / 2, (box_data[1] + box_data[3]) / 2))
+
         return self.global_id
 
     def add_polygon(self, label_name, polygon_data, id=-1):
@@ -319,7 +350,7 @@ class DrawData:
                 if self.data_pack[i]['id'] == id:
                     self.data_pack[i]['keypoints'] = list(key_points_data)
             if i == len(self.data_pack):  # id不存在，则新建
-                self.add_keypoints(*key_points_data, -1)
+                self.add_keypoints(key_points_data, -1)
         return self.global_id
 
     def append_attribute(self, id, **attrs):
@@ -343,8 +374,14 @@ class DrawData:
                 return True
         return False
 
+    def update_tracks(self):
+        if len(self.tracks) >= args.track_length:
+            self.tracks = self.tracks[:args.track_length - 1]
+        self.tracks.insert(0, [])
+
     def display(self):
         pprint(self.data_pack)
+        pprint(self.tracks)
 
 
 """
@@ -365,12 +402,18 @@ parser.add_argument('-box_color', default='green', choices=['orange', 'red', 'ye
 parser.add_argument('-name_font_size', default=25, type=int, help='字体大小')
 parser.add_argument('-name_font_color', default='black', choices=['orange', 'red', 'yellow', 'green', 'blue', 'black', 'white'], type=str, help='字体颜色')
 parser.add_argument('-name_font_background', default='white', choices=['orange', 'red', 'yellow', 'green', 'blue', 'black', 'white'], type=str, help='字体背景颜色')
+
+parser.add_argument('-attr_length', default=100, type=int, help='属性长度')
 parser.add_argument('-attr_font_size', default=20, type=int, help='属性字体大小')
 parser.add_argument('-attr_font_color', default='white', choices=['orange', 'red', 'yellow', 'green', 'blue', 'black', 'white'], type=str, help='属性字体颜色')
 parser.add_argument('-attr_font_background', default='black', choices=['orange', 'red', 'yellow', 'green', 'blue', 'black', 'white'], type=str, help='属性字体背景颜色')
 parser.add_argument('-alpha_box', default=0.6, type=float, help='框的透明度')
 parser.add_argument('-alpha_name', default=0.4, type=float, help='名称背景透明度')
 parser.add_argument('-alpha_attr', default=0.4, type=float, help='熟悉背景透明度')
+parser.add_argument('-track_length', default=25, type=int, help='追踪的最大长度')
+parser.add_argument('-track_color', default='orange', choices=['orange', 'red', 'yellow', 'green', 'blue', 'black', 'white'], type=str, help='踪迹颜色')
+parser.add_argument('-track_size', default=3, type=int, help='轨迹的宽度')
+
 args = parser.parse_args()
 
 if args.dataset == 'coco':
@@ -391,21 +434,34 @@ else:
     NotImplementedError
 
 if __name__ == "__main__":
+    out_dir = './demo.mp4'
+    fps = 25
     img = cv.imread('demo.jpg')
-    p = Painter()
-    p.add_color_map(['Person中文1'], [(255, 0, 0)])
-    id2 = p.add_box("Person中文2", (100, 100, 700, 600, 0.6))
-    # p.forget()
-    id1 = p.add_box("Person中文1", [250, 250, 300, 300, 0.6])
-    kps = [855.274658203125, 393.79803466796875, 0.6467858552932739, 860.8237915039062, 385.4743347167969, 0.7896369695663452, 846.9509887695312, 391.0234680175781, 0.015277005732059479, 888.5695190429688, 391.0234680175781, 0.8852718472480774, 916.3151245117188, 368.826904296875, 0.0440521202981472, 885.794921875, 463.1622619628906, 0.5772745609283447, 949.6099853515625, 393.79803466796875, 0.685591995716095,
-           835.8526611328125, 502.0061950683594, 0.654134213924408, 916.3151245117188, 354.9540710449219, 0.04689516872167587, 830.3035278320312, 440.9656982421875, 0.8230804800987244, 849.7255249023438, 427.0928649902344, 0.03562654182314873, 827.5289916992188, 596.341552734375, 0.412489652633667, 877.47119140625, 590.7924194335938, 0.35453400015830994, 785.9104614257812, 654.6074829101562, 0.030688518658280373,
-           852.5000610351562, 612.9889526367188, 0.011988930404186249, 902.4423217773438, 676.8040161132812, 0.01115232054144144, 902.4423217773438, 690.6768188476562, 0.018584873527288437,
-           2]
-    id3 = p.add_keypoints(kps)
-    ex2 = p.append_attribute(id2, hat='true', action='jump', coat='red')
-    ex1 = p.append_attribute(id1, hat='false', action='jump', coat='red')
-    # dd.display()
-    out = p.draw(img)
-    cv.imwrite('out.jpg', out)
-    # cv.imshow('s', out)
-    # cv.waitKey(0)
+    fourcc_mpeg4 = cv.VideoWriter_fourcc(*'DIVX')
+    fourcc = fourcc_mpeg4
+    size = (img.shape[1], img.shape[0])
+    videoWrite = cv.VideoWriter(out_dir, fourcc, fps, size)
+
+    p = Painter(track=True)
+
+    for i in range(100):
+        print(i)
+        img = cv.imread('demo.jpg')
+        p.forget()
+        id1 = p.add_box("Person中文21", (100 + i * 20, 100, 700 + i * 20, 600, 0.6))
+        id2 = p.add_box("Person中文1", [250, 250, 300, 300, 0.6])
+        kps = [855.274658203125, 393.79803466796875, 0.6467858552932739, 860.8237915039062, 385.4743347167969, 0.7896369695663452, 846.9509887695312, 391.0234680175781, 0.015277005732059479, 888.5695190429688, 391.0234680175781, 0.8852718472480774, 916.3151245117188, 368.826904296875, 0.0440521202981472, 885.794921875, 463.1622619628906, 0.5772745609283447, 949.6099853515625, 393.79803466796875, 0.685591995716095,
+               835.8526611328125, 502.0061950683594, 0.654134213924408, 916.3151245117188, 354.9540710449219, 0.04689516872167587, 830.3035278320312, 440.9656982421875, 0.8230804800987244, 849.7255249023438, 427.0928649902344, 0.03562654182314873, 827.5289916992188, 596.341552734375, 0.412489652633667, 877.47119140625, 590.7924194335938, 0.35453400015830994, 785.9104614257812, 654.6074829101562, 0.030688518658280373,
+               852.5000610351562, 612.9889526367188, 0.011988930404186249, 902.4423217773438, 676.8040161132812, 0.01115232054144144, 902.4423217773438, 690.6768188476562, 0.018584873527288437,
+               2]
+        id3 = p.add_keypoints(kps)
+        hat = 'true'
+        ex1 = p.append_attribute(id1, hat=hat, action='jump', coat='red')
+        ex2 = p.append_attribute(id2, hat='false', action='jump', coat='red')
+        if hat == 'true':
+            p.specify_color(ex1, (255, 0, 0))
+        out = p.draw(img)
+        videoWrite.write(out)
+        # cv.imwrite('out.jpg', out)
+        # cv.imshow('s', out)
+        # cv.waitKey(0)
